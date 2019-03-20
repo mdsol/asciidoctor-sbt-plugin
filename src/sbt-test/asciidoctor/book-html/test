@@ -1,3 +1,3 @@
-> processAsciiDoc
+> asciidoctor:processAsciiDoc
 
-$ exists target.value/output_path/a_path/custom-filename.html
+$ exists target/docs/sample.html

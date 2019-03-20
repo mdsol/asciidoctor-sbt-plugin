@@ -10,6 +10,8 @@ import org.asciidoctor.internal.JRubyRuntimeContext
 import org.asciidoctor.log.{LogRecord, Severity}
 import org.jruby.Ruby
 import sbt.Keys._
+import sbt.librarymanagement.Configuration
+import sbt.librarymanagement.Configurations.Runtime
 import sbt.{Def, _}
 
 import scala.annotation.tailrec
@@ -58,7 +60,7 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     asciiDocTemplateEngine := None,
     asciiDocTitle := ""
   )
-  override lazy val projectSettings: Seq[Setting[_]] = asciiDoctorSettings
+  override lazy val projectSettings: Seq[Setting[_]] = inConfig(AsciiDoctor)(asciiDoctorSettings)
 
   private def processAsciiDocTask: Def.Initialize[Task[AsciiDocResult]] = Def.task[AsciiDocResult] {
     val skp = (skip in publish).value
@@ -398,7 +400,7 @@ private class CustomExtensionDirectoryWalker(val absolutePath: String, val fileE
 }
 
 trait AsciiDoctorPluginKeys {
-  val AsciiDoctor: Configuration = config("asciidoctor") extend Compile
+  val AsciiDoctor: Configuration = Configuration.of("AsciiDoctor", "asciidoctor") extend Runtime
   val processAsciiDoc: TaskKey[Unit] = taskKey[Unit]("Convert AsciiDoc files to target files")
 
   val asciiDocAttributeMissing: SettingKey[AttributeMissing] = settingKey[AttributeMissing]("What to do when an attribute is missing")

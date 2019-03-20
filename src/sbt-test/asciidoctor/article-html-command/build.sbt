@@ -2,11 +2,11 @@ import scala.io.Source
 lazy val root = (project in file("."))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
-    asciiDocBackend := "html",
-    asciiDocDoctype := Some("article"),
-    asciiDocAttributes := Map("toc" -> "left", "source-highlighter" -> "coderay"),
-    asciiDocSourceDirectory := baseDirectory.value / "src" / "main" / "doc",
-    asciiDocOutputDirectory := target.value / "docs",
+    AsciiDoctor / asciiDocBackend := "html",
+    AsciiDoctor / asciiDocDoctype := Some("article"),
+    AsciiDoctor / asciiDocAttributes := Map("toc" -> "left", "source-highlighter" -> "coderay"),
+    AsciiDoctor / asciiDocSourceDirectory := baseDirectory.value / "src" / "main" / "doc",
+    AsciiDoctor / asciiDocOutputDirectory := target.value / "docs",
     name := "simple-doc",
     scalaVersion := "2.12.8",
     version := "0.1",
@@ -14,7 +14,7 @@ lazy val root = (project in file("."))
       val expectedFiles = Seq("sample.html")
 
       expectedFiles.foreach { expectedFile =>
-        val file = new File(asciiDocOutputDirectory.value, expectedFile)
+        val file = new File((AsciiDoctor / asciiDocOutputDirectory).value, expectedFile)
         if (!file.isFile) {
           sys.error("Missing file " + file)
         }
