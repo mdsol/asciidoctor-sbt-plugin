@@ -5,9 +5,6 @@ import java.io.{File, IOException}
 import org.asciidoctor.log.LogRecord
 
 object LogRecordHelper {
-  // includes replacers for cursor (file & line)
-  val ASCIIDOCTOR_FULL_LOG_FORMAT = "asciidoctor: %s: %s: line %s: %s"
-  val ASCIIDOCTOR_SIMPLE_LOG_FORMAT = "asciidoctor: %s: %s"
 
   /**
     * Formats the logRecord in a similar manner to original Asciidoctor.
@@ -18,7 +15,7 @@ object LogRecordHelper {
     */
   def format(logRecord: LogRecord): String = {
     val cursor = logRecord.getCursor
-    String.format(ASCIIDOCTOR_FULL_LOG_FORMAT, logRecord.getSeverity, cursor.getFile, cursor.getLineNumber, logRecord.getMessage)
+    s"asciidoctor: ${logRecord.getSeverity}: ${cursor.getFile}: line ${cursor.getLineNumber}: ${logRecord.getMessage}"
   }
 
   /**
@@ -31,14 +28,20 @@ object LogRecordHelper {
     */
   def format(logRecord: LogRecord, sourceDirectory: File): String = {
     val cursor = logRecord.getCursor
-    var relativePath = ""
-    try if (cursor != null) relativePath = new File(cursor.getFile).getCanonicalPath.substring(sourceDirectory.getCanonicalPath.length + 1)
-    catch {
-      case e: IOException =>
-        // use the absolute path as fail-safe
-        relativePath = cursor.getFile
+    val relativePath: String =
+      try {
+        if (cursor != null) {
+          new File(cursor.getFile).getCanonicalPath.substring(sourceDirectory.getCanonicalPath.length + 1)
+        } else ""
+      } catch {
+        case _: IOException =>
+          // use the absolute path as fail-safe
+          cursor.getFile
+      }
+    if (relativePath.length > 0) {
+      s"asciidoctor: ${logRecord.getSeverity}: $relativePath: line ${cursor.getLineNumber}: ${logRecord.getMessage}"
+    } else {
+      s"asciidoctor: ${logRecord.getSeverity}: ${logRecord.getMessage}"
     }
-    if (relativePath.length > 0) String.format(ASCIIDOCTOR_FULL_LOG_FORMAT, logRecord.getSeverity, relativePath, cursor.getLineNumber, logRecord.getMessage)
-    else String.format(ASCIIDOCTOR_SIMPLE_LOG_FORMAT, logRecord.getSeverity, logRecord.getMessage)
   }
 }
