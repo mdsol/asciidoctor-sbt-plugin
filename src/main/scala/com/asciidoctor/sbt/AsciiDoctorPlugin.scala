@@ -1,6 +1,6 @@
 package com.asciidoctor.sbt
 
-import java.io.{File, IOException}
+import java.io.{File => JFile, IOException}
 import java.util.logging.Logger
 
 import com.asciidoctor.sbt.extensions.{AsciidoctorJExtensionRegistry, ExtensionConfiguration}
@@ -347,9 +347,9 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
 
   protected def getAsciidoctorInstance(gemPathOpt: Option[String]): Asciidoctor = {
     val asciidoctor = gemPathOpt match {
-      case Some(path) if File.separatorChar == '\\' => Asciidoctor.Factory.create(path.replaceAll("\\\\", "/"))
-      case Some(path)                               => Asciidoctor.Factory.create(path)
-      case None                                     => Asciidoctor.Factory.create
+      case Some(path) if JFile.separatorChar == '\\' => Asciidoctor.Factory.create(path.replaceAll("\\\\", "/"))
+      case Some(path)                                => Asciidoctor.Factory.create(path)
+      case None                                      => Asciidoctor.Factory.create
     }
 
     val rubyInstance =

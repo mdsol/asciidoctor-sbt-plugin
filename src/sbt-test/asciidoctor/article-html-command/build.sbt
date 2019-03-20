@@ -1,4 +1,5 @@
 import scala.io.Source
+
 lazy val root = (project in file("."))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
