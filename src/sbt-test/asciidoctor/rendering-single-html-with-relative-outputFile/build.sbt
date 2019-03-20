@@ -3,7 +3,6 @@ lazy val root = (project in file("."))
   .settings(
     AsciiDoctor / asciiDocBackend := "html",
     AsciiDoctor / asciiDocSourceDirectory := baseDirectory.value / "src" / "main" / "doc",
-    AsciiDoctor / asciiDocOutputDirectory := target.value / "output_path",
     AsciiDoctor / asciiDocOutputFile := Some(new File("a_path/custom-filename.html")),
     name := "simple-doc",
     scalaVersion := "2.12.8",
