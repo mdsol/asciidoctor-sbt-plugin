@@ -17,10 +17,10 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   ),
   scalaVersion := "2.12.8",
   version := "0.1",
-  AsciiDoctor / asciiDocSourceDirectory := baseDirectory.value / "src" / "main" / "doc",
-  AsciiDoctor / asciiDocOutputDirectory := target.value / "docs",
-  AsciiDoctor / asciiDocBackend := "html",
-  AsciiDoctor / asciiDocHeaderFooter := false,
+  AsciiDoctor / sourceDirectory := baseDirectory.value / "src" / "main" / "doc",
+  AsciiDoctor / outputDirectory := target.value / "docs",
+  AsciiDoctor / backend := "html",
+  AsciiDoctor / headerFooter := false,
   TaskKey[Unit]("prepareDocs") := {
     streams.value.log.info(s"Processing Ascii Docs for ${name.value}")
     (compile in Compile).value
