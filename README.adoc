@@ -79,7 +79,8 @@ This is useful to split your sources in sets of master documents and included pa
 sourceDocumentName:: an override to process a single source file; defaults to all files in `$\{sourceDirectory}`
 sourceDocumentExtensions:: (named `extensions` in v1.5.3 and below) a `List<String>` of non-standard file extensions to render.
 Currently ad, adoc, and asciidoc will be rendered by default
-resources:: // TODO: implement copyResources
+// resources::
+// TODO: implement copyResources
 outputDirectory:: relative paths are added to the project root path. Defaults to [.path]_${project.build.directory}/generated-docs_.
 outputFile:: defaults to `null`, used to override the name of the generated output file, can be a relative or absolute path.
 Useful for backends that create a single file, e.g. the pdf backend.
