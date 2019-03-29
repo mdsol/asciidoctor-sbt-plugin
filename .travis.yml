@@ -1,0 +1,32 @@
+if: tag IS blank
+language: scala
+scala:
+- 2.12.8
+jdk:
+- openjdk8
+services:
+  - docker
+before_cache:
+  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.ivy2
+    - $HOME/.sbt
+    - $HOME/build/mdsol/asciidoctor-sbt-plugin/target
+    - $HOME/build/mdsol/asciidoctor-sbt-plugin/project/target
+
+before_install:
+- echo -e "machine github.com\n  login $GITHUB_AUTH_TOKEN" >> ~/.netrc
+
+script: sbt ++$TRAVIS_SCALA_VERSION scripted
+
+deploy:
+- provider: script
+  script: travis/deploy.sh
+  on:
+    all_branches: true
+    tags: false
