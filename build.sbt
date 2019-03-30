@@ -1,3 +1,9 @@
+useGpg := false
+usePgpKeyHex("87558ab01f3201fc")
+pgpPublicRing := baseDirectory.value / "travis" / ".gnupg" / "pubring.asc"
+pgpSecretRing := baseDirectory.value / "travis" / ".gnupg" / "secring.asc"
+pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
+
 lazy val root = (project in file("."))
   .enablePlugins(SbtPlugin)
   .settings(

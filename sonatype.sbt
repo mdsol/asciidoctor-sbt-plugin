@@ -1,8 +1,3 @@
-useGpg := false
-usePgpKeyHex("87558ab01f3201fc")
-pgpPublicRing := baseDirectory.value / "project" / ".gnupg" / "pubring.asc"
-pgpSecretRing := baseDirectory.value / "project" / ".gnupg" / "secring.asc"
-pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
 sonatypeProfileName := "com.mdsol"
 publishMavenStyle := true
 licenses := Seq("MDSOL" -> url("https://github.com/austek/asciidoctor-sbt-plugin/blob/master/LICENSE.txt"))
