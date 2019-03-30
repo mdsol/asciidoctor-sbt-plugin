@@ -16,8 +16,7 @@ before_cache:
 - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
 - find $HOME/.sbt        -name "*.lock"               -print -delete
 before_install:
-- openssl aes-256-cbc -K $encrypted_aec9562d08d0_key -iv $encrypted_aec9562d08d0_iv
-  -in project/.gnupg/secring.asc.enc -out project/.gnupg/secring.asc -d
+- openssl aes-256-cbc -K $encrypted_aec9562d08d0_key -iv $encrypted_aec9562d08d0_iv -in project/.gnupg/secring.asc.enc -out project/.gnupg/secring.asc -d
 - git config --global user.email "$GIT_USER_EMAIL"
 - git config --global user.name "$GIT_USER_NAME"
 - echo -e "machine github.com\n  login $GITHUB_AUTH_TOKEN" >> ~/.netrc
@@ -25,9 +24,11 @@ script: sbt ++$TRAVIS_SCALA_VERSION scripted
 deploy:
 - provider: script
   script: sbt ++$TRAVIS_SCALA_VERSION 'release with-defaults skip-tests'
+  skip_cleanup: true
   on:
     branch: master
 - provider: script
   script: sbt ++$TRAVIS_SCALA_VERSION publishSigned
+  skip_cleanup: true
   on:
     branch: develop
