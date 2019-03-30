@@ -1,0 +1,3 @@
+> asciidoctor:processAsciiDoc
+
+$ exists target/generated-docs/sample.html
