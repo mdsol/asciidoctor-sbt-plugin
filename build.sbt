@@ -7,7 +7,7 @@ pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
 lazy val root = (project in file("."))
   .enablePlugins(SbtPlugin)
   .settings(
-    organization := "org.asciidoctor",
+    organization := "com.mdsol",
     name := "sbt-asciidoctor",
     description := "AsciiDoctor SBT Plugin",
     scalaVersion := "2.12.8",
