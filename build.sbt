@@ -1,5 +1,5 @@
 useGpg := false
-usePgpKeyHex("87558ab01f3201fc")
+usePgpKeyHex("7D16F4CEB1F2979C")
 pgpPublicRing := baseDirectory.value / "travis" / ".gnupg" / "pubring.asc"
 pgpSecretRing := baseDirectory.value / "travis" / ".gnupg" / "secring.asc"
 pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
