@@ -5,4 +5,4 @@ target/
 .settings
 *.iml
 *.log
-project/.gnupg/secring.asc
+*.asc
