@@ -1,8 +1,8 @@
-package com.asciidoctor.sbt.log
+package com.mdsol.sbt.log
 
 import java.io.File
 
-import com.asciidoctor.sbt.PluginLogger
+import com.mdsol.sbt.PluginLogger
 import org.asciidoctor.log.{LogRecord, Severity, LogHandler => AsciiDocLogHandler}
 
 import scala.collection.mutable.ListBuffer

@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt.exts
+package com.mdsol.sbt.exts
 
 import java.lang.reflect.Method
 import java.util

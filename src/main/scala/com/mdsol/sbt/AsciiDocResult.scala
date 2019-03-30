@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt
+package com.mdsol.sbt
 
 trait AsciiDocResult
 

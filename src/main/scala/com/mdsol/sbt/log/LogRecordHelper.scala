@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt.log
+package com.mdsol.sbt.log
 
 import java.io.{File, IOException}
 

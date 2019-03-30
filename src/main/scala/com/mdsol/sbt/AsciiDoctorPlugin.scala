@@ -1,10 +1,12 @@
-package com.asciidoctor.sbt
+package com.mdsol.sbt
 
-import java.io.{File => JFile, IOException}
+import java.io.{IOException, File => JFile}
 import java.util.logging.Logger
 
-import com.asciidoctor.sbt.exts.{AsciidoctorJExtensionRegistry, ExtensionConfiguration}
-import com.asciidoctor.sbt.log.{FailIf, LogHandler, LogRecordHelper, MemoryLogHandler}
+import com.mdsol.sbt.exts.{AsciidoctorJExtensionRegistry, ExtensionConfiguration}
+import com.mdsol.sbt.log.{LogHandler, LogRecordHelper, MemoryLogHandler}
+import com.mdsol.sbt.exts.ExtensionConfiguration
+import com.mdsol.sbt.log.{FailIf, LogHandler, LogRecordHelper, MemoryLogHandler}
 import org.asciidoctor._
 import org.asciidoctor.internal.JRubyRuntimeContext
 import org.asciidoctor.log.{LogRecord, Severity}

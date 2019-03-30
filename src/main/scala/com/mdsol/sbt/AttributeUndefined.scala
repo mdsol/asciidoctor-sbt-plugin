@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt
+package com.mdsol.sbt
 
 import enumeratum.values._
 

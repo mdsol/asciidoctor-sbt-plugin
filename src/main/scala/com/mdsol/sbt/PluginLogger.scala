@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt
+package com.mdsol.sbt
 
 import sbt.Def
 import sbt.Keys.streams

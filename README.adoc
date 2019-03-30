@@ -38,7 +38,7 @@ This is an auto plugin, sbt 1.* is required.
 [subs=attributes+]
 .project/plugins.sbt
 ----
-addSbtPlugin("org.asciidoctor" % "sbt-asciidoctor" % {release-version})
+addSbtPlugin("com.mdsol" % "sbt-asciidoctor" % {release-version})
 ----
 [source,scala]
 [subs=attributes+]
@@ -125,8 +125,8 @@ Here follows a configuration example:
 [source,scala]
 ----
 AsciiDoc / extensions := List(
-    ExtensionConfiguration("org.asciidoctor.sbt.SomePreprocessor", None),
-    ExtensionConfiguration("org.asciidoctor.sbt.SomeBlockProcessor", Some("yell"))
+    ExtensionConfiguration("com.mdsol.sbt.SomePreprocessor", None),
+    ExtensionConfiguration("com.mdsol.sbt.SomeBlockProcessor", Some("yell"))
 )
 ----
 

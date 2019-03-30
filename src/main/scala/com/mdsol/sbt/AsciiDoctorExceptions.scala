@@ -1,4 +1,4 @@
-package com.asciidoctor.sbt
+package com.mdsol.sbt
 
 sealed class AsciiDoctorException(msg: String, throwable: Throwable) extends Exception(msg, throwable) {
   def this(msg: String) = this(msg, null)
