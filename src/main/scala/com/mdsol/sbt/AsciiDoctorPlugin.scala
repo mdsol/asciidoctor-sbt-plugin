@@ -4,8 +4,6 @@ import java.io.{IOException, File => JFile}
 import java.util.logging.Logger
 
 import com.mdsol.sbt.exts.{AsciidoctorJExtensionRegistry, ExtensionConfiguration}
-import com.mdsol.sbt.log.{LogHandler, LogRecordHelper, MemoryLogHandler}
-import com.mdsol.sbt.exts.ExtensionConfiguration
 import com.mdsol.sbt.log.{FailIf, LogHandler, LogRecordHelper, MemoryLogHandler}
 import org.asciidoctor._
 import org.asciidoctor.internal.JRubyRuntimeContext
