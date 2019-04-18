@@ -1,0 +1,246 @@
+= Asciidoctor SBT Plugin
+// Metadata
+:release-version: 0.1
+// Settings
+:idprefix:
+:idseparator: -
+ifdef::env-github,env-browser[]
+:toc: preamble
+endif::[]
+ifndef::env-github[:icons: font]
+// URIs
+:project-repo: asciidoctor/asciidoctor-sbt-plugin
+:uri-repo: https://github.com/{project-repo}
+:uri-asciidoc: http://asciidoc.org
+:uri-asciidoctor: http://asciidoctor.org
+:uri-sbt: https://www.scala-sbt.org
+// GitHub customization
+ifdef::env-github[]
+:badges:
+:tag: master
+:!toc-title:
+:tip-caption: :bulb:
+:note-caption: :paperclip:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+The Asciidoctor SBT Plugin is the official way to convert your {uri-asciidoc}[AsciiDoc] documentation using {uri-asciidoctor}[Asciidoctor] from an {uri-sbt}[SBT] build.
+
+== SBT Plugin
+
+== Installation
+
+This is an auto plugin, sbt 1.* is required.
+
+[source,scala]
+[subs=attributes+]
+.project/plugins.sbt
+----
+addSbtPlugin("com.mdsol" % "sbt-asciidoctor" % {release-version})
+----
+[source,scala]
+[subs=attributes+]
+.build.sbt
+----
+.enablePlugins(AsciiDoctorPlugin)
+----
+
+=== Usage
+
+The plugin adds a new scope named *asciidoctor* and task named *processAsciiDoc*.
+
+[source,bash]
+.Execution
+----
+sbt asciidoctor:processAsciiDoc
+----
+
+=== Configuration
+
+[NOTE]
+====
+All of the following settings must be withing the scope of `asciidoctor`.
+i.e. `AsciiDoctor / sourceDirectory := baseDirectory.value / "src" / "main" / "doc"`
+====
+
+There are several configuration settings that the Asciidoctor SBT plugin accepts, which parallel the options in Asciidoctor:
+
+sourceDirectory:: defaults to [.path]_baseDirectory.value / "src" / "main" / "asciidoc"_
+
+[NOTE]
+====
+All paths and AsciiDoc documents that start with `pass:[_]` are considered _internal_ and are skipped.
+That is, AsciiDocs are not rendered and resources are not copied to target, but you can include them normally from other AsciiDocs. +
+This is useful to split your sources in sets of master documents and included parts.
+====
+
+sourceDocumentName:: an override to process a single source file; defaults to all files in `$\{sourceDirectory}`
+sourceDocumentExtensions:: (named `extensions` in v1.5.3 and below) a `List<String>` of non-standard file extensions to render.
+Currently ad, adoc, and asciidoc will be rendered by default
+// resources::
+// TODO: implement copyResources
+outputDirectory:: relative paths are added to the project root path. Defaults to [.path]_${project.build.directory}/generated-docs_.
+outputFile:: defaults to `null`, used to override the name of the generated output file, can be a relative or absolute path.
+Useful for backends that create a single file, e.g. the pdf backend.
+All output will be redirected to the same file, the same way as the `-o, --out-file=OUT_FILE` option from the `asciidoctor` CLI command.
+skip:: set this to `true` to bypass generation, defaults to `false`
+preserveDirectories:: enables to specify whether the documents should be rendered in the same folder structure as in the source directory or not, defaults to `false`.
+When `true`, instead of generating all output in a single folder, output files are generated in the same structure.
+See the following example
++
+[source]
+----
+    ├── docs                          ├── docs
+    │   ├── examples.adoc             │   ├── examples.html
+    │   └── examples            =>    │   └── examples
+    │       ├── html.adoc             │       ├── html.html
+    │       └── docbook.adoc          │       └── docbook.html
+    └── index.adoc                    └── index.html
+----
+relativeBaseDir:: only used when sourceDirectory is not set, enables to specify that each AsciiDoc file must search for its resources in the same folder (for example, included files).
+Internally, for each AsciiDoc source, sets `sourceDirectory` to the same path as the source file.
+Defaults to `false`
+imagesDir:: defaults to `images`, which will be relative to the directory containing the source files
+backend:: defaults to `docbook`
+doctype:: defaults to `null` (which trigger's Asciidoctor's default of `article`)
+eruby:: defaults to erb, the version used in JRuby
+headerFooter:: defaults to `true`
+templateDir:: directory of Tilt-compatible templates to be used instead of the default built-in templates, disabled by default (`null`)
+templateEngine:: template engine to use for the custom converter templates, disabled by default (`null`)
+templateCache:: enables the built-in cache used by the template converter when reading the source of template files.
+Only relevant if the `:template_dir` option is specified, defaults to `true`
+sourceHighlighter:: enables and sets the source highlighter (currently `coderay` or `highlight.js` are supported)
+sourcemap:: adds file and line number information to each parsed block (`lineno` and `source_location` attributes), defaults to `false`
+catalogAssets:: tells the parser to capture images and links in the reference table available via the `references` property on the document AST object (experimental), defaults to `false`
+attributes:: a `Map<String,Object>` of attributes to pass to Asciidoctor, defaults to `null`
+embedAssets:: Embedd the CSS file, etc into the output, defaults to `false`
+gemPaths:: enables to specify the location to one or more gem installation directories (same as GEM_PATH environment var), `empty` by default
+requires:: a `List<String>` to specify additional Ruby libraries not packaged in AsciidoctorJ, `empty` by default
+extensions:: `List` of extensions to include during the conversion process (see link:https://github.com/asciidoctor/asciidoctorj/blob/master/README.adoc#extension-api[AsciidoctorJ's Extension API] for information about the available options).
+For each extension, the implementation class must be specified in the `className` parameter, the `blockName` is only required when configuring a _BlockProcessor_, _BlockMacroProcessor_ or _InlineMacroProcessor_.
+Here follows a configuration example:
++
+[source,scala]
+----
+AsciiDoc / extensions := List(
+    ExtensionConfiguration("com.mdsol.sbt.SomePreprocessor", None),
+    ExtensionConfiguration("com.mdsol.sbt.SomeBlockProcessor", Some("yell"))
+)
+----
+
+NOTE: Extensions can also be integrated through the SPI interface implementation.
+This method does not require any configuration in the [.path]_pom.xml_, see link:https://github.com/asciidoctor/asciidoctorj#extension-spi[Extension SPI] for details.
+
+enableVerbose:: enables Asciidoctor verbose messages, defaults to `false`.
+Enable it, for example, if you want to validate https://asciidoctor.org/docs/user-manual/#validating-internal-cross-references[internal cross references] and capture the messages with the logHandler option.
+
+logHandler:: enables processing of Asciidoctor messages (e.g. errors on missing included files), to hide messages as well setup build fail conditions based on them.
+Contains the following configuration elements:
+
+* `outputToConsole`: `Boolean`, defaults to `true`.
+Redirects all Asciidoctor messages to SBT's console logger as INFO during renderization.
+* `failIf`: build fail conditions, disabled by default.
+Allows setting one or many conditions that when met, abort the SBT build with `BUILD FAILURE` status.
++
+[NOTE]
+====
+Note that the plugin matches that all conditions are met together.
+Unless you are controlling a very specific case, setting one condition should be enough. +
+Also, messages matching fail conditions will be sent to SBT's logger as ERROR.
+So, when enabling `outputToConsole`, some messages will appear duplicated as both INFO and ERROR.
+====
++
+Currently, two conditions can be defined:
+
+** `severity`: severity of the Asciidoctor message, in order: `INFO`,`WARN`,`ERROR`,`FATAL`,`UNKNOWN`.
+Build will fail if a message is found of severity equal or higher.
+
+** `containsText`: text to search inside messages.
+Build will fail if the text is found. +
+For example, set `include` to fail on any issue related to included files regardless the severity level.
++
+[source,scala]
+.example: fail on any message
+----
+AsciiDoc / logHandler := LogHandler(
+  outputToConsole = false, <!--1-->
+  FailIf(Some(Severity.DEBUG), None) <!--2-->
+)
+----
+<1> Do not show messages as INFO in SBT output
+<2> Build will fail on any message of severity `DEBUG` or higher, that includes all.
+All matching messages will appear as ERROR in SBT output.
+
+[NOTE]
+====
+Since version 1.5.8 of AsciidoctorJ set `enableVerbose` to `true` option to validate internal cross references, this is being improved to avoid false positives
+See https://github.com/asciidoctor/asciidoctor/issues/2722[#2722] if your are interested in the details.
+====
+
+==== Built-in attributes
+
+There are various attributes Asciidoctor recognizes.
+Below is a list of them and what they do.
+
+title:: An override for the title of the document.
+
+NOTE: This attribute, for backwards compatibility, can still be used in the top level configuration options.
+
+Many other attributes are possible.
+Refer to the http://asciidoctor.org/docs/user-manual/#attribute-catalog[catalog of document attributes] in the Asciidoctor user manual for a complete list.
+
+More will be added in the future to take advantage of other options and attributes of Asciidoctor.
+Any setting in the attributes section that conflicts with an explicitly named attribute configuration will be overidden by the explicitly named attribute configuration.
+These settings can all be changed in the `<configuration>` section of the plugin section:
+
+[source,scala]
+.Plugin configuration options
+----
+AsciiDoctor / backend := "html",
+AsciiDoctor / doctype := Some("book"),
+AsciiDoctor / attributes := Map("stylesheet" -> "my-theme.css"),
+AsciiDoctor / sourceDirectory := baseDirectory.value / "src" / "docs" / "asciidoc",
+AsciiDoctor / outputDirectory := target.value / "docs" / "asciidoc",
+----
+
+==== Passing POM properties
+
+It is possible to pass properties defined in the build to the Asciidoctor processor.
+This is handy for example to include in the generated document the artifact version number.
+
+This is done by creating a custom AsciiDoc property in the `attributes` section of the `configuration`.
+
+[source,scala]
+----
+AsciiDoctor / attributes := Map("project-version" -> version.value),
+----
+
+The custom AsciiDoc property can then be used in the document like this:
+
+==== Setting boolean values
+
+Boolean attributes in asciidoctor, such as `sectnums`, `linkcss` or `copycss` can be set with a value of `true` and unset with a value of `false`.
+
+==== Examples
+
+In the `attributes` part of the Asciidoctor Plugin configuration:
+
+[source,scala]
+----
+AsciiDoctor / attributes := Map("sectnums" -> true, "linkcss" -> false),
+----
++
+templatesDir (also template_dir)::
+Built-in template are supported by specifying a templates directory (i.e., `templatesDir`).
+This feature enables you to provide a custom template for converting any node in the tree (e.g., document, section, listing, etc).
+Custom templates can be extremely helpful when trying to customize the appearance of your site.
+
+templatesDirs (also template_dirs)::
+Allows to set multiple templates.
+Note that each one should be enclosed in a `<dir>` element.
+
+requires::
+Sames as the plugin's `requires`.
+Specifies additional Ruby libraries not packaged in AsciidoctorJ, `empty` by default.
