@@ -5,8 +5,6 @@ scala:
 - 2.12.8
 jdk:
 - openjdk8
-services:
-- docker
 cache:
   directories:
   - "$HOME/.ivy2/cache"
