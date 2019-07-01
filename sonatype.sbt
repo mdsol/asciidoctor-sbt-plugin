@@ -1,6 +1,6 @@
 sonatypeProfileName := "com.mdsol"
 publishMavenStyle := true
-licenses := Seq("MDSOL" -> url("https://github.com/austek/asciidoctor-sbt-plugin/blob/master/LICENSE.txt"))
+licenses := Seq("MDSOL" -> url("https://github.com/mdsol/asciidoctor-sbt-plugin/blob/master/LICENSE.txt"))
 
 import xerial.sbt.Sonatype._
 sonatypeProjectHosting := Some(GitHubHosting("austek", "sbt-asciidoctor", "austek@mdsol.com"))
@@ -23,4 +23,10 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   releaseStepCommand("sonatypeReleaseAll"),
   pushChanges
+)
+credentials += Credentials(
+  "GnuPG Key ID",
+  "gpg",
+  "B47AF57CF7DD40EE6B141A627D16F4CEB1F2979C",
+  "ignored"
 )

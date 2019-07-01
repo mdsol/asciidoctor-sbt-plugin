@@ -1,12 +1,13 @@
 package com.mdsol.sbt
 
-import java.io.{IOException, File => JFile}
+import java.io.IOException
 import java.util.logging.Logger
 
 import com.mdsol.sbt.exts.{AsciidoctorJExtensionRegistry, ExtensionConfiguration}
 import com.mdsol.sbt.log.{FailIf, LogHandler, LogRecordHelper, MemoryLogHandler}
 import org.asciidoctor._
-import org.asciidoctor.internal.JRubyRuntimeContext
+import org.asciidoctor.jruby.internal.JRubyRuntimeContext
+import org.asciidoctor.jruby.{AbstractDirectoryWalker, AsciiDocDirectoryWalker}
 import org.asciidoctor.log.{LogRecord, Severity}
 import org.jruby.Ruby
 import sbt.Keys._
@@ -108,7 +109,7 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
       attributeMissing.value,
       attributeUndefined.value,
       attributes.value,
-      attributesChain.value,
+      attributesChain.value
     )
 
     optionsBuilder.attributes(attributesBuilder)
@@ -120,9 +121,9 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
 
     // TODO: implement copyResources
 
-    val sourceFiles: Seq[File] = sourceDocumentName.value match {
+    val sourceFiles: List[File] = sourceDocumentName.value match {
       case Some(srcDocName) => List(new File(sourceDirectory.value, srcDocName))
-      case None             => scanSourceFiles(sourceDirectory.value, sourceDocumentExtensions.value)
+      case None => scanSourceFiles(sourceDirectory.value, sourceDocumentExtensions.value)
     }
 
     // register LogHandler to capture asciidoctor messages
@@ -153,17 +154,19 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   }
 
   @tailrec
-  private def renderFiles(asciidoctor: Asciidoctor,
-                          memoryLogHandler: MemoryLogHandler,
-                          logHandler: LogHandler,
-                          optionsBuilder: OptionsBuilder,
-                          sourceDirectory: File,
-                          sourceFiles: Seq[File],
-                          outputDirectory: File,
-                          outputFile: Option[File],
-                          relativeBaseDir: Boolean,
-                          preserveDirectories: Boolean,
-                          renderedFiles: Set[File]): Set[File] = {
+  private def renderFiles(
+    asciidoctor: Asciidoctor,
+    memoryLogHandler: MemoryLogHandler,
+    logHandler: LogHandler,
+    optionsBuilder: OptionsBuilder,
+    sourceDirectory: File,
+    sourceFiles: List[File],
+    outputDirectory: File,
+    outputFile: Option[File],
+    relativeBaseDir: Boolean,
+    preserveDirectories: Boolean,
+    renderedFiles: Set[File]
+  ): Set[File] = {
     sourceFiles match {
       case Nil => renderedFiles
       case source :: remainingSourceFiles =>
@@ -193,9 +196,21 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
   }
 
-  protected def renderFile(asciidoctor: Asciidoctor, options: OptionsBuilder, f: File): Unit = {
-    asciidoctor.convertFile(f, options)
-    logRenderedFile(f)
+  protected def renderFile(asciidoctor: Asciidoctor, options: OptionsBuilder, file: File): Unit = {
+    val selectedOptions = Map(
+      "base_dir" -> options.asMap().get("base_dir"),
+      "destination_dir" -> options.asMap().get("destination_dir"),
+      "attributes" -> options.asMap().get("attributes"),
+      "safe" -> options.asMap().get("safe"),
+      "to_dir" -> options.asMap().get("to_dir") //TODO: Confirm options
+      // ,
+//      "header_footer" -> options.asMap().get("header_footer"),
+//      "doctype" -> options.asMap().get("doctype"),
+//      "backend" ->  options.asMap().get("backend")
+    ).asJava
+
+    asciidoctor.convertFile(file, selectedOptions)
+    logRenderedFile(file)
   }
 
   private def processLogMessages(memoryLogHandler: MemoryLogHandler, sourceDirectory: File, logHandler: LogHandler): Unit = {
@@ -222,9 +237,8 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
   }
 
-  private def synchronize(synchronizations: List[Synchronization]): Unit = {
+  private def synchronize(synchronizations: List[Synchronization]): Unit =
     synchronizations.foreach(synchronize)
-  }
 
   protected def synchronize(synchronization: Synchronization): Unit = {
     if (synchronization.source.isDirectory)
@@ -244,17 +258,18 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
 
   protected def logRenderedFile(f: File): Unit = logInfo("Rendered " + f.getAbsolutePath)
 
-  protected def ensureOutputExists(outputDirectory: File): Unit = {
+  protected def ensureOutputExists(outputDirectory: File): Unit =
     if (!outputDirectory.exists && !outputDirectory.mkdirs) logError("Can't create " + outputDirectory.getPath)
-  }
 
-  private def setDestinationPaths(sourceDirectory: File,
-                                  sourceFile: File,
-                                  outputDirectory: File,
-                                  outputFile: Option[File],
-                                  optionsBuilder: OptionsBuilder,
-                                  relativeBaseDir: Boolean,
-                                  preserveDirectories: Boolean): File =
+  private def setDestinationPaths(
+    sourceDirectory: File,
+    sourceFile: File,
+    outputDirectory: File,
+    outputFile: Option[File],
+    optionsBuilder: OptionsBuilder,
+    relativeBaseDir: Boolean,
+    preserveDirectories: Boolean
+  ): File =
     try {
       // when preserveDirectories == false, parent and sourceDirectory are the same
       if (relativeBaseDir) {
@@ -283,15 +298,17 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
         throw new Exception("Unable to locate output directory", e)
     }
 
-  protected def setOptionsOnBuilder(backend: String,
-                                    headerFooter: Boolean,
-                                    eRuby: String,
-                                    sourcemap: Boolean,
-                                    catalogAssets: Boolean,
-                                    templateCache: Boolean,
-                                    doctype: Option[String],
-                                    templateEngine: Option[String],
-                                    templateDir: Option[File]): OptionsBuilder = {
+  protected def setOptionsOnBuilder(
+    backend: String,
+    headerFooter: Boolean,
+    eRuby: String,
+    sourcemap: Boolean,
+    catalogAssets: Boolean,
+    templateCache: Boolean,
+    doctype: Option[String],
+    templateEngine: Option[String],
+    templateDir: Option[File]
+  ): OptionsBuilder = {
     val optionsBuilder = OptionsBuilder.options
       .backend(backend)
       .safe(SafeMode.UNSAFE)
@@ -310,13 +327,13 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   }
 
   protected def setAttributesOnBuilder(
-      sourceHighlighter: Option[String],
-      embedAssets: Boolean,
-      imagesDir: Option[String],
-      attributeMissing: AttributeMissing,
-      attributeUndefined: AttributeUndefined,
-      attributes: Map[String, Any],
-      attributesChain: String
+    sourceHighlighter: Option[String],
+    embedAssets: Boolean,
+    imagesDir: Option[String],
+    attributeMissing: AttributeMissing,
+    attributeUndefined: AttributeUndefined,
+    attributes: Map[String, Any],
+    attributesChain: String
   ): AttributesBuilder = {
     val attributesBuilder = AttributesBuilder.attributes
     if (sourceHighlighter.isDefined) attributesBuilder.sourceHighlighter(sourceHighlighter.get)
@@ -338,11 +355,7 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   }
 
   protected def getAsciidoctorInstance(gemPathOpt: Option[String]): Asciidoctor = {
-    val asciidoctor = gemPathOpt match {
-      case Some(path) if JFile.separatorChar == '\\' => Asciidoctor.Factory.create(path.replaceAll("\\\\", "/"))
-      case Some(path)                                => Asciidoctor.Factory.create(path)
-      case None                                      => Asciidoctor.Factory.create
-    }
+    val asciidoctor = Asciidoctor.Factory.create
 
     val rubyInstance =
       try {
@@ -362,9 +375,9 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
 
     val gemHome = rubyInstance.evalScriptlet("ENV['GEM_HOME']").toString
     val gemHomeExpected = gemPathOpt match {
-      case None                            => ""
+      case None => ""
       case Some(path) if path.trim.isEmpty => ""
-      case Some(path)                      => path.split(java.io.File.pathSeparator)(0)
+      case Some(path) => path.split(java.io.File.pathSeparator)(0)
     }
 
     if (gemHome.nonEmpty && gemHomeExpected != gemHome) {

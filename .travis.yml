@@ -2,22 +2,26 @@ if: tag IS blank
 sudo: false
 language: scala
 scala:
-- 2.12.8
+  - 2.12.10
 jdk:
-- openjdk8
+  - openjdk8
+
 cache:
   directories:
-  - "$HOME/.ivy2/cache"
-  - "$HOME/.sbt"
+    - "$HOME/.ivy2/cache"
+    - "$HOME/.sbt"
+
 before_cache:
-- rm -fv $HOME/.ivy2/.sbt.ivy.lock
-- find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
-- find $HOME/.sbt        -name "*.lock"               -print -delete
-script: sbt ++$TRAVIS_SCALA_VERSION scripted
+  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
+script: sbt ++$TRAVIS_SCALA_VERSION scalafmtSbtCheck scalafmtCheckAll scripted
+
 deploy:
-- provider: script
-  script: travis/deploy.sh
-  skip_cleanup: true
-  on:
-    all_branches: true
-    condition: $TRAVIS_BRANCH =~ ^master|develop$
+  - provider: script
+    script: travis/deploy.sh
+    skip_cleanup: true
+    on:
+      all_branches: true
+      condition: $TRAVIS_BRANCH =~ ^master|develop|upgrade/asciiDoctor$
