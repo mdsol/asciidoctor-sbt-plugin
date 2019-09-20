@@ -4,7 +4,7 @@ lazy val root = (project in file("."))
     organization := "com.mdsol",
     name := "sbt-asciidoctor",
     description := "AsciiDoctor SBT Plugin",
-    scalaVersion := "2.12.8",
+    scalaVersion := "2.12.10",
     libraryDependencies ++= Seq(
       "org.asciidoctor" % "asciidoctorj" % "2.1.0",
       "com.beachape"    %% "enumeratum"  % "1.5.13"

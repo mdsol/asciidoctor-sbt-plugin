@@ -74,8 +74,6 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
       Skipped
     }
 
-    ensureOutputExists(outputDirectory.value)
-
     if (asciiDocResources.value.nonEmpty) {
       asciiDocResources.value.foreach { resource =>
         if (!resource.exists || (resource.isDirectory && resource.list.length == 0)) {
@@ -178,7 +176,11 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
           logWarn(s"Duplicated destination found: overwriting file: ${destinationPath.getAbsolutePath}")
         }
 
-        renderFile(asciidoctor, optionsBuilder, source)
+        if (outputFile.isEmpty)
+          renderFile(asciidoctor, optionsBuilder, source)
+        else
+          renderFile(asciidoctor, optionsBuilder.toFile(destinationPath), source)
+
         processLogMessages(memoryLogHandler, sourceDirectory, logHandler)
         renderFiles(
           asciidoctor,
@@ -196,20 +198,25 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
   }
 
+  private val includedOptions = List("base_dir", "destination_dir", "attributes", "safe", "to_dir", "to_file", "mkdirs")
   protected def renderFile(asciidoctor: Asciidoctor, options: OptionsBuilder, file: File): Unit = {
-    val selectedOptions = Map(
-      "base_dir" -> options.asMap().get("base_dir"),
-      "destination_dir" -> options.asMap().get("destination_dir"),
-      "attributes" -> options.asMap().get("attributes"),
-      "safe" -> options.asMap().get("safe"),
-      "to_dir" -> options.asMap().get("to_dir") //TODO: Confirm options
-      // ,
-//      "header_footer" -> options.asMap().get("header_footer"),
-//      "doctype" -> options.asMap().get("doctype"),
-//      "backend" ->  options.asMap().get("backend")
-    ).asJava
+    val selectedOptions = options.asMap().asScala.filter { case (k, v) => includedOptions.contains(k) }
 
-    asciidoctor.convertFile(file, selectedOptions)
+    def toDir: File = {
+      selectedOptions.get(Options.TO_DIR) match {
+        case Some(toDirValue: File) => toDirValue
+        case Some(toDirValue) => new File(toDirValue.toString)
+        case _ => throw new Exception("Expected to_dir to be present")
+      }
+    }
+
+    selectedOptions.get(Options.TO_FILE) match {
+      case Some(toFile: File) =>
+        selectedOptions + Options.TO_FILE -> new File(toDir, toFile.name).absolutePath
+      case Some(toFile) => selectedOptions + Options.TO_FILE -> new File(toDir, new File(toFile.toString).getName).absolutePath
+      case _ =>
+    }
+    asciidoctor.convertFile(file, selectedOptions.asJava)
     logRenderedFile(file)
   }
 
@@ -257,9 +264,6 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   }
 
   protected def logRenderedFile(f: File): Unit = logInfo("Rendered " + f.getAbsolutePath)
-
-  protected def ensureOutputExists(outputDirectory: File): Unit =
-    if (!outputDirectory.exists && !outputDirectory.mkdirs) logError("Can't create " + outputDirectory.getPath)
 
   private def setDestinationPaths(
     sourceDirectory: File,
