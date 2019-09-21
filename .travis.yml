@@ -22,4 +22,4 @@ deploy:
   skip_cleanup: true
   on:
     all_branches: true
-    condition: "$TRAVIS_BRANCH =~ ^master|develop|upgrade/asciiDoctor$"
+    condition: "$TRAVIS_BRANCH =~ ^master|develop"
