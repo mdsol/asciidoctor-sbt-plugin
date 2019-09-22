@@ -39,6 +39,6 @@ releaseProcess := Seq[ReleaseStep](
 credentials += Credentials(
   "GnuPG Key ID",
   "gpg",
-  "B47AF57CF7DD40EE6B141A627D16F4CEB1F2979C",
+  "9438BF439C3271F623936C7613062ABA30C1AA2E",
   "ignored"
 )
