@@ -198,25 +198,8 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
   }
 
-  private val includedOptions = List("base_dir", "destination_dir", "attributes", "safe", "to_dir", "to_file", "mkdirs")
   protected def renderFile(asciidoctor: Asciidoctor, options: OptionsBuilder, file: File): Unit = {
-    val selectedOptions = options.asMap().asScala.filter { case (k, v) => includedOptions.contains(k) }
-
-    def toDir: File = {
-      selectedOptions.get(Options.TO_DIR) match {
-        case Some(toDirValue: File) => toDirValue
-        case Some(toDirValue) => new File(toDirValue.toString)
-        case _ => throw new Exception("Expected to_dir to be present")
-      }
-    }
-
-    selectedOptions.get(Options.TO_FILE) match {
-      case Some(toFile: File) =>
-        selectedOptions + Options.TO_FILE -> new File(toDir, toFile.name).absolutePath
-      case Some(toFile) => selectedOptions + Options.TO_FILE -> new File(toDir, new File(toFile.toString).getName).absolutePath
-      case _ =>
-    }
-    asciidoctor.convertFile(file, selectedOptions.asJava)
+    asciidoctor.convertFile(file, options.asMap)
     logRenderedFile(file)
   }
 
