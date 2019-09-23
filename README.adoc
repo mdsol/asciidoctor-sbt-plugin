@@ -9,7 +9,7 @@ ifdef::env-github,env-browser[]
 endif::[]
 ifndef::env-github[:icons: font]
 // URIs
-:project-repo: asciidoctor/asciidoctor-sbt-plugin
+:project-repo: mdsol/asciidoctor-sbt-plugin
 :uri-repo: https://github.com/{project-repo}
 :uri-asciidoc: http://asciidoc.org
 :uri-asciidoctor: http://asciidoctor.org
