@@ -15,9 +15,8 @@ class MemoryLogHandler(outputToConsole: Boolean, sourceDirectory: File) extends 
     if (outputToConsole) logInfo(LogRecordHelper.format(logRecord, sourceDirectory))
   }
 
-  def clear(): Unit = {
+  def clear(): Unit =
     records.clear()
-  }
 
   /**
     * Returns LogRecords that are equal or above the severity level.
@@ -25,7 +24,7 @@ class MemoryLogHandler(outputToConsole: Boolean, sourceDirectory: File) extends 
     * @param severity Asciidoctor severity level
     * @return list of filtered logRecords
     */
-  def filter(severity: Severity): List[LogRecord] = records.filter(_.getSeverity.getRubyId >= severity.getRubyId).toList
+  def filter(severity: Severity): List[LogRecord] = records.filter(_.getSeverity.compareTo(severity) >= 0).toList
 
   /**
     * Returns LogRecords whose message contains text.
@@ -43,5 +42,5 @@ class MemoryLogHandler(outputToConsole: Boolean, sourceDirectory: File) extends 
     * @return list of filtered logRecords
     */
   def filter(severity: Severity, text: String): List[LogRecord] =
-    records.filter(r => r.getSeverity.getRubyId >= severity.getRubyId && r.getMessage.contains(text)).toList
+    records.filter(r => r.getSeverity.compareTo(severity) >= 0 && r.getMessage.contains(text)).toList
 }
