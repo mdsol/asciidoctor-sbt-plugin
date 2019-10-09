@@ -19,48 +19,47 @@ import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex
 
-object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
+object AsciiDoctorPlugin extends AutoPlugin with AsciiDoctorPluginLogger {
 
   object autoImport extends AsciiDoctorPluginKeys
   import autoImport._
 
-  lazy val asciiDoctorSettings: Seq[Setting[_]] = Seq(
-    processAsciiDoc := processAsciiDocTask.value,
-    attributeMissing := AttributeMissing.Skip,
-    attributeUndefined := AttributeUndefined.DropLine,
-    attributes := Map.empty,
-    attributesChain := "",
-    backend := "docbook",
-    catalogAssets := false,
-    doctype := None,
-    eRuby := "",
-    embedAssets := false,
-    enableVerbose := false,
-    encoding := "",
-    extensionPattern := raw""".*\\.a((sc(iidoc)?)|d(oc)?)\$$""".r,
-    extensions := List.empty,
-    gemPath := Some(""),
-    headerFooter := true,
-    imagesDir := Some("images@"), // '@' Allows override by :imagesdir: document attribute
-    logHandler := LogHandler(outputToConsole = true, FailIf(Some(Severity.ERROR), None)),
-    outputDirectory := target.value / "generated-docs",
-    outputFile := None,
-    preserveDirectories := false,
-    relativeBaseDir := false,
+  override lazy val projectSettings: Seq[Setting[_]] = Seq(
+    asciiDocConvert := processAsciiDocTask.value,
+    asciiDocAttributeMissing := AttributeMissing.Skip,
+    asciiDocAttributeUndefined := AttributeUndefined.DropLine,
+    asciiDocAttributes := Map.empty,
+    asciiDocAttributesChain := "",
+    asciiDocBackend := "docbook",
+    asciiDocCatalogAssets := false,
+    asciiDocDirectory := baseDirectory.value / "src" / "docs" / "asciidoc",
+    asciiDocERuby := "",
+    asciiDocEmbedAssets := false,
+    asciiDocEnableVerbose := false,
+    asciiDocEncoding := "",
+    asciiDocExtensionPattern := raw""".*\\.a((sc(iidoc)?)|d(oc)?)\$$""".r,
+    asciiDocExtensions := List.empty,
+    asciiDocGemPath := Some(""),
+    asciiDocHeaderFooter := true,
+    asciiDocImagesDir := Some("images@"), // '@' Allows override by :imagesdir: document attribute
+    asciiDocLogHandler := LogHandler(outputToConsole = true, FailIf(Some(Severity.ERROR), None)),
+    asciiDocOutputDirectory := target.value / "generated-docs",
+    asciiDocOutputFile := None,
+    asciiDocPreserveDirectories := false,
+    asciiDocRelativeBaseDir := false,
     asciiDocRequires := List.empty,
     asciiDocResources := List.empty,
-    sourceDirectory := baseDirectory.value / "src" / "docs" / "asciidoc",
-    sourceDocumentExtensions := List.empty,
-    sourceDocumentName := None,
-    sourceHighlighter := None,
-    sourcemap := false,
-    synchronizations := List.empty,
-    templateCache := true,
-    templateDir := None,
-    templateEngine := None,
-    title := ""
+    asciiDocSourceDocumentExtensions := List.empty,
+    asciiDocSourceDocumentName := None,
+    asciiDocSourceHighlighter := None,
+    asciiDocSourcemap := false,
+    asciiDocSynchronizations := List.empty,
+    asciiDocTemplateCache := true,
+    asciiDocTemplateDir := None,
+    asciiDocTemplateEngine := None,
+    asciiDocTitle := "",
+    asciiDocType := None
   )
-  override lazy val projectSettings: Seq[Setting[_]] = inConfig(AsciiDoctor)(asciiDoctorSettings)
 
   private def processAsciiDocTask: Def.Initialize[Task[AsciiDocResult]] = Def.task[AsciiDocResult] {
     val skp = (skip in publish).value
@@ -69,8 +68,8 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
       logDebug(s"Skipping AsciiDoc processing for ${ref.project}")
       Skipped
     }
-    if (!sourceDirectory.value.exists) {
-      logInfo(s"sourceDirectory ${sourceDirectory.value.getPath} does not exist. Skip processing")
+    if (!asciiDocDirectory.value.exists) {
+      logInfo(s"asciiDocDirectory ${asciiDocDirectory.value.getPath} does not exist. Skip processing")
       Skipped
     }
 
@@ -82,50 +81,50 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
       }
     }
 
-    val asciidoctor = getAsciidoctorInstance(gemPath.value)
+    val asciidoctor = getAsciidoctorInstance(asciiDocGemPath.value)
 
-    if (enableVerbose.value) asciidoctor.requireLibrary("enable_verbose.rb")
+    if (asciiDocEnableVerbose.value) asciidoctor.requireLibrary("enable_verbose.rb")
 
     asciidoctor.requireLibraries(asciiDocRequires.value.asJava)
 
     val optionsBuilder = setOptionsOnBuilder(
-      backend.value,
-      headerFooter.value,
-      eRuby.value,
-      sourcemap.value,
-      catalogAssets.value,
-      templateCache.value,
-      doctype.value,
-      templateEngine.value,
-      templateDir.value
+      asciiDocBackend.value,
+      asciiDocHeaderFooter.value,
+      asciiDocERuby.value,
+      asciiDocSourcemap.value,
+      asciiDocCatalogAssets.value,
+      asciiDocTemplateCache.value,
+      asciiDocType.value,
+      asciiDocTemplateEngine.value,
+      asciiDocTemplateDir.value
     )
 
     val attributesBuilder = setAttributesOnBuilder(
-      sourceHighlighter.value,
-      embedAssets.value,
-      imagesDir.value,
-      attributeMissing.value,
-      attributeUndefined.value,
-      attributes.value,
-      attributesChain.value
+      asciiDocSourceHighlighter.value,
+      asciiDocEmbedAssets.value,
+      asciiDocImagesDir.value,
+      asciiDocAttributeMissing.value,
+      asciiDocAttributeUndefined.value,
+      asciiDocAttributes.value,
+      asciiDocAttributesChain.value
     )
 
     optionsBuilder.attributes(attributesBuilder)
 
     val extensionRegistry = new AsciidoctorJExtensionRegistry(asciidoctor)
-    extensions.value.foreach { extension =>
+    asciiDocExtensions.value.foreach { extension =>
       extensionRegistry.register(extension.className, extension.blockName)
     }
 
     // TODO: implement copyResources
 
-    val sourceFiles: List[File] = sourceDocumentName.value match {
-      case Some(srcDocName) => List(new File(sourceDirectory.value, srcDocName))
-      case None => scanSourceFiles(sourceDirectory.value, sourceDocumentExtensions.value)
+    val sourceFiles: List[File] = asciiDocSourceDocumentName.value match {
+      case Some(srcDocName) => List(new File(asciiDocDirectory.value, srcDocName))
+      case None => scanSourceFiles(asciiDocDirectory.value, asciiDocSourceDocumentExtensions.value)
     }
 
     // register LogHandler to capture asciidoctor messages
-    val memoryLogHandler = new MemoryLogHandler(logHandler.value.outputToConsole, sourceDirectory.value)
+    val memoryLogHandler = new MemoryLogHandler(asciiDocLogHandler.value.outputToConsole, asciiDocDirectory.value)
     if (sourceFiles.nonEmpty) {
       asciidoctor.registerLogHandler(memoryLogHandler)
       // disable default console output of AsciidoctorJ
@@ -135,18 +134,18 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     renderFiles(
       asciidoctor,
       memoryLogHandler,
-      logHandler.value,
+      asciiDocLogHandler.value,
       optionsBuilder,
-      sourceDirectory.value,
+      asciiDocDirectory.value,
       sourceFiles,
-      outputDirectory.value,
-      outputFile.value,
-      relativeBaseDir.value,
-      preserveDirectories.value,
+      asciiDocOutputDirectory.value,
+      asciiDocOutputFile.value,
+      asciiDocRelativeBaseDir.value,
+      asciiDocPreserveDirectories.value,
       Set.empty
     )
 
-    synchronize(synchronizations.value)
+    synchronize(asciiDocSynchronizations.value)
 
     Success
   }
@@ -155,44 +154,52 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   private def renderFiles(
     asciidoctor: Asciidoctor,
     memoryLogHandler: MemoryLogHandler,
-    logHandler: LogHandler,
+    asciiDocLogHandler: LogHandler,
     optionsBuilder: OptionsBuilder,
-    sourceDirectory: File,
+    asciiDocDirectory: File,
     sourceFiles: List[File],
-    outputDirectory: File,
-    outputFile: Option[File],
-    relativeBaseDir: Boolean,
-    preserveDirectories: Boolean,
+    asciiDocOutputDirectory: File,
+    asciiDocOutputFile: Option[File],
+    asciiDocRelativeBaseDir: Boolean,
+    asciiDocPreserveDirectories: Boolean,
     renderedFiles: Set[File]
   ): Set[File] = {
     sourceFiles match {
       case Nil => renderedFiles
       case source :: remainingSourceFiles =>
         val destinationPath =
-          setDestinationPaths(sourceDirectory, source, outputDirectory, outputFile, optionsBuilder, relativeBaseDir, preserveDirectories)
+          setDestinationPaths(
+            asciiDocDirectory,
+            source,
+            asciiDocOutputDirectory,
+            asciiDocOutputFile,
+            optionsBuilder,
+            asciiDocRelativeBaseDir,
+            asciiDocPreserveDirectories
+          )
         val updatedRenderedFiles = renderedFiles + destinationPath
 
         if (renderedFiles.size == updatedRenderedFiles.size) {
           logWarn(s"Duplicated destination found: overwriting file: ${destinationPath.getAbsolutePath}")
         }
 
-        if (outputFile.isEmpty)
+        if (asciiDocOutputFile.isEmpty)
           renderFile(asciidoctor, optionsBuilder, source)
         else
           renderFile(asciidoctor, optionsBuilder.toFile(destinationPath), source)
 
-        processLogMessages(memoryLogHandler, sourceDirectory, logHandler)
+        processLogMessages(memoryLogHandler, asciiDocDirectory, asciiDocLogHandler)
         renderFiles(
           asciidoctor,
           memoryLogHandler,
-          logHandler,
+          asciiDocLogHandler,
           optionsBuilder,
-          sourceDirectory,
+          asciiDocDirectory,
           remainingSourceFiles,
-          outputDirectory,
-          outputFile,
-          relativeBaseDir,
-          preserveDirectories,
+          asciiDocOutputDirectory,
+          asciiDocOutputFile,
+          asciiDocRelativeBaseDir,
+          asciiDocPreserveDirectories,
           updatedRenderedFiles
         )
     }
@@ -203,16 +210,16 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     logRenderedFile(file)
   }
 
-  private def processLogMessages(memoryLogHandler: MemoryLogHandler, sourceDirectory: File, logHandler: LogHandler): Unit = {
+  private def processLogMessages(memoryLogHandler: MemoryLogHandler, asciiDocDirectory: File, asciiDocLogHandler: LogHandler): Unit = {
     def logRecords(records: List[LogRecord], msg: String): Unit = {
       records.foreach { record =>
-        logError(LogRecordHelper.format(record, sourceDirectory))
+        logError(LogRecordHelper.format(record, asciiDocDirectory))
       }
       if (records.nonEmpty) {
         throw AsciiDoctorIssuesFoundException(msg)
       }
     }
-    (logHandler.failIf.severity, logHandler.failIf.containsText) match {
+    (asciiDocLogHandler.failIf.severity, asciiDocLogHandler.failIf.containsText) match {
       case (Some(severity), Some(textToSearch)) =>
         val records = memoryLogHandler.filter(severity, textToSearch)
         logRecords(records, s"Found ${records.size} issue(s) matching severity $severity or higher and text '$textToSearch'")
@@ -227,8 +234,8 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
   }
 
-  private def synchronize(synchronizations: List[Synchronization]): Unit =
-    synchronizations.foreach(synchronize)
+  private def synchronize(asciiDocSynchronizations: List[Synchronization]): Unit =
+    asciiDocSynchronizations.foreach(synchronize)
 
   protected def synchronize(synchronization: Synchronization): Unit = {
     if (synchronization.source.isDirectory)
@@ -249,30 +256,30 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
   protected def logRenderedFile(f: File): Unit = logInfo("Rendered " + f.getAbsolutePath)
 
   private def setDestinationPaths(
-    sourceDirectory: File,
+    asciiDocDirectory: File,
     sourceFile: File,
-    outputDirectory: File,
-    outputFile: Option[File],
+    asciiDocOutputDirectory: File,
+    asciiDocOutputFile: Option[File],
     optionsBuilder: OptionsBuilder,
-    relativeBaseDir: Boolean,
-    preserveDirectories: Boolean
+    asciiDocRelativeBaseDir: Boolean,
+    asciiDocPreserveDirectories: Boolean
   ): File =
     try {
-      // when preserveDirectories == false, parent and sourceDirectory are the same
-      if (relativeBaseDir) {
+      // when asciiDocPreserveDirectories == false, parent and asciiDocDirectory are the same
+      if (asciiDocRelativeBaseDir) {
         optionsBuilder.baseDir(sourceFile.getParentFile)
       } else {
-        optionsBuilder.baseDir(sourceDirectory)
+        optionsBuilder.baseDir(asciiDocDirectory)
       }
-      if (preserveDirectories) {
-        val candidatePath = sourceFile.getParentFile.getCanonicalPath.substring(sourceDirectory.getCanonicalPath.length)
-        val relativePath = new File(outputDirectory.getCanonicalPath + candidatePath)
+      if (asciiDocPreserveDirectories) {
+        val candidatePath = sourceFile.getParentFile.getCanonicalPath.substring(asciiDocDirectory.getCanonicalPath.length)
+        val relativePath = new File(asciiDocOutputDirectory.getCanonicalPath + candidatePath)
         optionsBuilder.toDir(relativePath).destinationDir(relativePath)
       } else {
-        optionsBuilder.toDir(outputDirectory).destinationDir(outputDirectory)
+        optionsBuilder.toDir(asciiDocOutputDirectory).destinationDir(asciiDocOutputDirectory)
       }
 
-      outputFile match {
+      asciiDocOutputFile match {
         case Some(outFile) =>
           optionsBuilder.toFile(outFile)
           if (outFile.isAbsolute) outFile
@@ -286,56 +293,56 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     }
 
   protected def setOptionsOnBuilder(
-    backend: String,
-    headerFooter: Boolean,
-    eRuby: String,
-    sourcemap: Boolean,
-    catalogAssets: Boolean,
-    templateCache: Boolean,
-    doctype: Option[String],
-    templateEngine: Option[String],
-    templateDir: Option[File]
+    asciiDocBackend: String,
+    asciiDocHeaderFooter: Boolean,
+    asciiDocERuby: String,
+    asciiDocSourcemap: Boolean,
+    asciiDocCatalogAssets: Boolean,
+    asciiDocTemplateCache: Boolean,
+    asciiDocType: Option[String],
+    asciiDocTemplateEngine: Option[String],
+    asciiDocTemplateDir: Option[File]
   ): OptionsBuilder = {
     val optionsBuilder = OptionsBuilder.options
-      .backend(backend)
+      .backend(asciiDocBackend)
       .safe(SafeMode.UNSAFE)
-      .headerFooter(headerFooter)
-      .eruby(eRuby)
+      .headerFooter(asciiDocHeaderFooter)
+      .eruby(asciiDocERuby)
       .mkDirs(true)
     // Following options are only set when the value is different than the default
-    if (sourcemap) optionsBuilder.option("sourcemap", true)
-    if (catalogAssets) optionsBuilder.option("catalog_assets", true)
-    if (!templateCache) optionsBuilder.option("template_cache", false)
-    if (doctype.isDefined) optionsBuilder.docType(doctype.get)
-    if (templateEngine.isDefined) optionsBuilder.templateEngine(templateEngine.get)
-    if (templateDir.isDefined) optionsBuilder.templateDir(templateDir.get)
+    if (asciiDocSourcemap) optionsBuilder.option("asciiDocSourcemap", true)
+    if (asciiDocCatalogAssets) optionsBuilder.option("catalog_assets", true)
+    if (!asciiDocTemplateCache) optionsBuilder.option("template_cache", false)
+    if (asciiDocType.isDefined) optionsBuilder.docType(asciiDocType.get)
+    if (asciiDocTemplateEngine.isDefined) optionsBuilder.templateEngine(asciiDocTemplateEngine.get)
+    if (asciiDocTemplateDir.isDefined) optionsBuilder.templateDir(asciiDocTemplateDir.get)
 
     optionsBuilder
   }
 
   protected def setAttributesOnBuilder(
-    sourceHighlighter: Option[String],
-    embedAssets: Boolean,
-    imagesDir: Option[String],
-    attributeMissing: AttributeMissing,
-    attributeUndefined: AttributeUndefined,
-    attributes: Map[String, Any],
-    attributesChain: String
+    asciiDocSourceHighlighter: Option[String],
+    asciiDocEmbedAssets: Boolean,
+    asciiDocImagesDir: Option[String],
+    asciiDocAttributeMissing: AttributeMissing,
+    asciiDocAttributeUndefined: AttributeUndefined,
+    asciiDocAttributes: Map[String, Any],
+    asciiDocAttributesChain: String
   ): AttributesBuilder = {
     val attributesBuilder = AttributesBuilder.attributes
-    if (sourceHighlighter.isDefined) attributesBuilder.sourceHighlighter(sourceHighlighter.get)
-    if (embedAssets) {
+    if (asciiDocSourceHighlighter.isDefined) attributesBuilder.sourceHighlighter(asciiDocSourceHighlighter.get)
+    if (asciiDocEmbedAssets) {
       attributesBuilder.linkCss(false)
       attributesBuilder.dataUri(true)
     }
-    if (imagesDir.isDefined) attributesBuilder.imagesDir(imagesDir.get)
-    attributesBuilder.attributeMissing(attributeMissing.value)
-    attributesBuilder.attributeUndefined(attributeUndefined.value)
+    if (asciiDocImagesDir.isDefined) attributesBuilder.imagesDir(asciiDocImagesDir.get)
+    attributesBuilder.attributeMissing(asciiDocAttributeMissing.value)
+    attributesBuilder.attributeUndefined(asciiDocAttributeUndefined.value)
 
-    AsciiDoctorHelper.addAttributes(attributes, attributesBuilder)
-    if (attributesChain.nonEmpty) {
-      logInfo("Attributes: " + attributesChain)
-      attributesBuilder.arguments(attributesChain)
+    AsciiDoctorHelper.addAttributes(asciiDocAttributes, attributesBuilder)
+    if (asciiDocAttributesChain.nonEmpty) {
+      logInfo("Attributes: " + asciiDocAttributesChain)
+      attributesBuilder.arguments(asciiDocAttributesChain)
     }
 
     attributesBuilder
@@ -374,13 +381,13 @@ object AsciiDoctorPlugin extends AutoPlugin with PluginLogger {
     asciidoctor
   }
 
-  private def scanSourceFiles(sourceDirectory: File, sourceDocumentExtensions: List[String]): List[File] = {
-    val absoluteSourceDirectory = sourceDirectory.getAbsolutePath
+  private def scanSourceFiles(asciiDocDirectory: File, asciiDocSourceDocumentExtensions: List[String]): List[File] = {
+    val absoluteSourceDirectory = asciiDocDirectory.getAbsolutePath
     val asciidoctorFiles =
-      if (sourceDocumentExtensions.isEmpty) {
+      if (asciiDocSourceDocumentExtensions.isEmpty) {
         new AsciiDocDirectoryWalker(absoluteSourceDirectory).scan
       } else {
-        new CustomExtensionDirectoryWalker(absoluteSourceDirectory, sourceDocumentExtensions).scan
+        new CustomExtensionDirectoryWalker(absoluteSourceDirectory, asciiDocSourceDocumentExtensions).scan
       }
     asciidoctorFiles.asScala.filter(f => f.getAbsolutePath != absoluteSourceDirectory && !f.getName.startsWith("_")).toList
   }
@@ -392,47 +399,48 @@ private class CustomExtensionDirectoryWalker(val absolutePath: String, val fileE
 }
 
 trait AsciiDoctorPluginKeys {
-  val AsciiDoctor: Configuration = Configuration.of("AsciiDoctor", "asciidoctor") extend Runtime
-  val processAsciiDoc: TaskKey[Unit] = taskKey[Unit]("Convert AsciiDoc files to target files")
+  val asciiDocConvert: TaskKey[Unit] = taskKey[Unit]("Convert AsciiDoc files to target files")
 
-  val attributeMissing: SettingKey[AttributeMissing] = settingKey[AttributeMissing]("What to do when an attribute is missing")
-  val attributeUndefined: SettingKey[AttributeUndefined] = settingKey[AttributeUndefined]("What to do when an attribute is undefined")
-  val attributes: SettingKey[Map[String, Any]] = settingKey[Map[String, Any]]("Attributes to pass to Asciidoctor")
-  val attributesChain: SettingKey[String] = settingKey[String]("Space separated key=value attributes to pass to Asciidoctor")
-  val backend: SettingKey[String] = settingKey[String]("Asciidoctor to use")
-  val catalogAssets: SettingKey[Boolean] = settingKey[Boolean](
+  val asciiDocAttributeMissing: SettingKey[AttributeMissing] = settingKey[AttributeMissing]("What to do when an attribute is missing")
+  val asciiDocAttributeUndefined: SettingKey[AttributeUndefined] = settingKey[AttributeUndefined]("What to do when an attribute is undefined")
+  val asciiDocAttributes: SettingKey[Map[String, Any]] = settingKey[Map[String, Any]]("Attributes to pass to Asciidoctor")
+  val asciiDocAttributesChain: SettingKey[String] = settingKey[String]("Space separated key=value attributes to pass to Asciidoctor")
+  val asciiDocBackend: SettingKey[String] = settingKey[String]("Asciidoctor to use")
+  val asciiDocDirectory: SettingKey[File] = settingKey[File]("Directory containing AsciiDoc files")
+  val asciiDocCatalogAssets: SettingKey[Boolean] = settingKey[Boolean](
     "Parser to capture images and links in the reference table available via the references property on the document AST object (experimental)"
   )
-  val doctype: SettingKey[Option[String]] = settingKey[Option[String]]("Asciidoctor doctype")
-  val eRuby: SettingKey[String] = settingKey[String]("eRuby")
-  val embedAssets: SettingKey[Boolean] = settingKey[Boolean]("Embed the CSS file, etc into the output")
-  val enableVerbose: SettingKey[Boolean] = settingKey[Boolean]("verbose")
-  val encoding: SettingKey[String] = settingKey[String]("Encoding of Asciidoctor source documents")
-  val extensionPattern: SettingKey[Regex] = settingKey[Regex]("Regex for AsciiDoc file extension")
-  val extensions: SettingKey[List[ExtensionConfiguration]] =
+  val asciiDocType: SettingKey[Option[String]] = settingKey[Option[String]]("Asciidoctor asciiDocType")
+  val asciiDocERuby: SettingKey[String] = settingKey[String]("eRuby")
+  val asciiDocEmbedAssets: SettingKey[Boolean] = settingKey[Boolean]("Embed the CSS file, etc into the output")
+  val asciiDocEnableVerbose: SettingKey[Boolean] = settingKey[Boolean]("verbose")
+  val asciiDocEncoding: SettingKey[String] = settingKey[String]("Encoding of Asciidoctor source documents")
+  val asciiDocExtensionPattern: SettingKey[Regex] = settingKey[Regex]("Regex for AsciiDoc file extension")
+  val asciiDocExtensions: SettingKey[List[ExtensionConfiguration]] =
     settingKey[List[ExtensionConfiguration]]("List of extensions to include during the conversion process")
-  val gemPath: SettingKey[Option[String]] =
+  val asciiDocGemPath: SettingKey[Option[String]] =
     settingKey[Option[String]]("Location to one or more gem installation directories (same as GEM_PATH environment var)")
-  val headerFooter: SettingKey[Boolean] = settingKey[Boolean]("Enable header and footer")
-  val imagesDir: SettingKey[Option[String]] = settingKey[Option[String]]("Path to directory containing images, relative to source directory")
-  val logHandler = settingKey[LogHandler]("enables processing of Asciidoctor messages")
-  val outputDirectory: SettingKey[File] = settingKey[File]("Default directory target directory to containing converted files")
-  val outputFile: SettingKey[Option[File]] = settingKey[Option[File]]("Used to override the name of the generated output file")
-  val preserveDirectories: SettingKey[Boolean] =
+  val asciiDocHeaderFooter: SettingKey[Boolean] = settingKey[Boolean]("Enable header and footer")
+  val asciiDocImagesDir: SettingKey[Option[String]] = settingKey[Option[String]]("Path to directory containing images, relative to source directory")
+  val asciiDocLogHandler = settingKey[LogHandler]("enables processing of Asciidoctor messages")
+  val asciiDocOutputDirectory: SettingKey[File] = settingKey[File]("Default directory target directory to containing converted files")
+  val asciiDocOutputFile: SettingKey[Option[File]] = settingKey[Option[File]]("Used to override the name of the generated output file")
+  val asciiDocPreserveDirectories: SettingKey[Boolean] =
     settingKey[Boolean]("Whether the documents should be rendered in the same folder structure as in the source directory or not")
-  val relativeBaseDir: SettingKey[Boolean] = settingKey[Boolean]("Search in the same folder as AsciiDoc file, only used when baseDir not set")
+  val asciiDocRelativeBaseDir: SettingKey[Boolean] = settingKey[Boolean]("Search in the same folder as AsciiDoc file, only used when baseDir not set")
   val asciiDocRequires: SettingKey[List[String]] = settingKey[List[String]]("Additional Ruby libraries not packaged in AsciidoctorJ")
   val asciiDocResources: SettingKey[List[File]] = settingKey[List[File]]("List of resources to copy to the output directory (e.g., images, css)")
-  val sourceDocumentExtensions: SettingKey[List[String]] =
+  val asciiDocSourceDocumentExtensions: SettingKey[List[String]] =
     settingKey[List[String]]("(named extensions in v1.5.3 and below) a List<String> of non-standard file extensions to render")
-  val sourceDocumentName: SettingKey[Option[String]] = settingKey[Option[String]]("An override to process a single source file")
-  val sourceHighlighter: SettingKey[Option[String]] = settingKey[Option[String]]("Enable and set the source highlighter")
-  val sourcemap: SettingKey[Boolean] = settingKey[Boolean]("Adds file and line number information to each parsed block (lineno and source_location attributes)")
-  val synchronizations: SettingKey[List[Synchronization]] = settingKey[List[Synchronization]]("Files to synchronize to target")
-  val templateCache: SettingKey[Boolean] =
+  val asciiDocSourceDocumentName: SettingKey[Option[String]] = settingKey[Option[String]]("An override to process a single source file")
+  val asciiDocSourceHighlighter: SettingKey[Option[String]] = settingKey[Option[String]]("Enable and set the source highlighter")
+  val asciiDocSourcemap: SettingKey[Boolean] =
+    settingKey[Boolean]("Adds file and line number information to each parsed block (lineno and source_location attributes)")
+  val asciiDocSynchronizations: SettingKey[List[Synchronization]] = settingKey[List[Synchronization]]("Files to synchronize to target")
+  val asciiDocTemplateCache: SettingKey[Boolean] =
     settingKey[Boolean]("Enable the built-in cache used by the template converter when reading the source of template files")
-  val templateDir: SettingKey[Option[sbt.File]] =
+  val asciiDocTemplateDir: SettingKey[Option[sbt.File]] =
     settingKey[Option[File]]("Directory of Tilt-compatible templates to be used instead of the default built-in templates")
-  val templateEngine: SettingKey[Option[String]] = settingKey[Option[String]]("Template engine to use for the custom converter templates")
-  val title: SettingKey[String] = settingKey[String]("An override for the title of the document")
+  val asciiDocTemplateEngine: SettingKey[Option[String]] = settingKey[Option[String]]("Template engine to use for the custom converter templates")
+  val asciiDocTitle: SettingKey[String] = settingKey[String]("An override for the title of the document")
 }

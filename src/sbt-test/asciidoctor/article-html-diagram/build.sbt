@@ -3,13 +3,13 @@ import scala.io.Source
 lazy val root = (project in file("."))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
-    AsciiDoctor / backend := "html",
-    AsciiDoctor / doctype := Some("article"),
-    AsciiDoctor / enableVerbose := true,
-    AsciiDoctor / asciiDocRequires := List("asciidoctor-diagram"),
-    AsciiDoctor / attributes := Map("toc" -> "left"),
-    AsciiDoctor / sourceDirectory := baseDirectory.value / "src" / "main" / "doc",
-    AsciiDoctor / outputDirectory := target.value / "docs",
+    asciiDocBackend := "html",
+    asciiDocType := Some("article"),
+    asciiDocEnableVerbose := true,
+    asciiDocRequires := List("asciidoctor-diagram"),
+    asciiDocAttributes := Map("toc" -> "left"),
+    asciiDocDirectory := baseDirectory.value / "src" / "main" / "doc",
+    asciiDocOutputDirectory := target.value / "docs",
     name := "simple-doc",
     scalaVersion := "2.12.8",
     version := "0.1",
@@ -19,7 +19,7 @@ lazy val root = (project in file("."))
 
       expectedFiles.foreach {
         expectedFile =>
-          val file = new File((AsciiDoctor / outputDirectory).value, expectedFile)
+          val file = new File((asciiDocOutputDirectory).value, expectedFile)
           log.info(s"Checking for existence of $file")
           if (!file.isFile) {
             sys.error("Missing file " + file)

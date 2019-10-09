@@ -3,9 +3,9 @@ package com.mdsol.sbt
 import org.asciidoctor.{Attributes, AttributesBuilder}
 
 object AsciiDoctorHelper {
-  def addAttributes(attributes: Map[String, Any], attributesBuilder: AttributesBuilder): Unit =
+  def addAttributes(asciiDocAttributes: Map[String, Any], attributesBuilder: AttributesBuilder): Unit =
     // TODO Figure out how to reliably set other values (like boolean values, dates, times, etc)
-    attributes.foreach { case (attribute, value) => addAttribute(attribute, value, attributesBuilder) }
+    asciiDocAttributes.foreach { case (attribute, value) => addAttribute(attribute, value, attributesBuilder) }
 
   def addAttribute(attribute: String, value: Any, attributesBuilder: AttributesBuilder): AttributesBuilder = {
     value match {
