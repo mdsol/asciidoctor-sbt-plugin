@@ -20,18 +20,18 @@ object LogRecordHelper {
 
   /**
     * Formats the logRecord in a similar manner to original Asciidoctor.
-    * Note: prints the relative path of the file to `sourceDirectory`.
+    * Note: prints the relative path of the file to `asciiDocDirectory`.
     *
     * @param logRecord       Asciidoctor logRecord to format
-    * @param sourceDirectory source directory of the converted AsciiDoc document
+    * @param asciiDocDirectory source directory of the converted AsciiDoc document
     * @return Asciidoctor-like formatted string
     */
-  def format(logRecord: LogRecord, sourceDirectory: File): String = {
+  def format(logRecord: LogRecord, asciiDocDirectory: File): String = {
     val cursor = logRecord.getCursor
     val relativePath: String =
       try {
         if (cursor != null) {
-          new File(cursor.getFile).getCanonicalPath.substring(sourceDirectory.getCanonicalPath.length + 1)
+          new File(cursor.getFile).getCanonicalPath.substring(asciiDocDirectory.getCanonicalPath.length + 1)
         } else ""
       } catch {
         case _: IOException =>

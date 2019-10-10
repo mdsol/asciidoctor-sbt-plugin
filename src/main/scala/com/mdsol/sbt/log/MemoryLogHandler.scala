@@ -2,17 +2,17 @@ package com.mdsol.sbt.log
 
 import java.io.File
 
-import com.mdsol.sbt.PluginLogger
+import com.mdsol.sbt.AsciiDoctorPluginLogger
 import org.asciidoctor.log.{LogRecord, Severity, LogHandler => AsciiDocLogHandler}
 
 import scala.collection.mutable.ListBuffer
 
-class MemoryLogHandler(outputToConsole: Boolean, sourceDirectory: File) extends AsciiDocLogHandler with PluginLogger {
+class MemoryLogHandler(outputToConsole: Boolean, asciiDocDirectory: File) extends AsciiDocLogHandler with AsciiDoctorPluginLogger {
   private val records: ListBuffer[LogRecord] = ListBuffer.empty
 
   override def log(logRecord: LogRecord): Unit = {
     records += logRecord
-    if (outputToConsole) logInfo(LogRecordHelper.format(logRecord, sourceDirectory))
+    if (outputToConsole) logInfo(LogRecordHelper.format(logRecord, asciiDocDirectory))
   }
 
   def clear(): Unit =

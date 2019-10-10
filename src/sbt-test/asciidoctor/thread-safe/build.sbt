@@ -4,7 +4,7 @@ import scala.io.Source
 
 lazy val asciiDocVersion: String = sys.props.get("asciidoctorj.versio") match {
   case Some(x) => x
-  case _       => sys.error("""|The system property 'plugin.version' is not defined.
+  case _ => sys.error("""|The system property 'plugin.version' is not defined.
                          |Specify this property using the scriptedLaunchOpts -D.""".stripMargin)
 }
 
@@ -17,14 +17,14 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
   ),
   scalaVersion := "2.12.8",
   version := "0.1",
-  AsciiDoctor / sourceDirectory := baseDirectory.value / "src" / "main" / "doc",
-  AsciiDoctor / outputDirectory := target.value / "docs",
-  AsciiDoctor / backend := "html",
-  AsciiDoctor / headerFooter := false,
+  asciiDocDirectory := baseDirectory.value / "src" / "main" / "doc",
+  asciiDocOutputDirectory := target.value / "docs",
+  asciiDocBackend := "html",
+  asciiDocHeaderFooter := false,
   TaskKey[Unit]("prepareDocs") := {
     streams.value.log.info(s"Processing Ascii Docs for ${name.value}")
     (compile in Compile).value
-    (processAsciiDoc in AsciiDoctor).value
+    asciiDocConvert.value
   }
 )
 
@@ -32,7 +32,7 @@ lazy val `asciidoctor-project-1` = (project in file("asciidoctor-project-1"))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
     name := "asciidoctor-project-1",
-    description := "Runs asciidoctor-sbt-plugin:processAsciiDoc",
+    description := "Runs asciidoctor-sbt-plugin:asciiDocConvert",
     commonSettings
   )
 
@@ -40,7 +40,7 @@ lazy val `asciidoctor-project-2` = (project in file("asciidoctor-project-2"))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
     name := "asciidoctor-project-2",
-    description := "Runs asciidoctor-sbt-plugin:processAsciiDoc",
+    description := "Runs asciidoctor-sbt-plugin:asciiDocConvert",
     commonSettings
   )
 
@@ -48,7 +48,7 @@ lazy val `asciidoctor-project-3` = (project in file("asciidoctor-project-3"))
   .enablePlugins(AsciiDoctorPlugin)
   .settings(
     name := "asciidoctor-project-3",
-    description := "Runs asciidoctor-sbt-plugin:processAsciiDoc",
+    description := "Runs asciidoctor-sbt-plugin:asciiDocConvert",
     commonSettings
   )
 
@@ -57,7 +57,7 @@ lazy val `spi-registered-log` = (project in file("."))
     description := "Tests SPI registration of an AsciidoctorJ LogHandler",
     check := {
       val log = sLog.value
-       (1 to 3)
+      (1 to 3)
         .map { i =>
           val projectName = s"asciidoctor-project-$i"
           val file = new File(baseDirectory.value, s"$projectName/target/docs/sample.html")
@@ -70,7 +70,10 @@ lazy val `spi-registered-log` = (project in file("."))
           val text = bufferedSource.getLines.mkString("\n")
           bufferedSource.close
           (projectName, text)
-        }.toList.combinations(2).toList
+        }
+        .toList
+        .combinations(2)
+        .toList
         .collect {
           case a :: b :: Nil if a._2 != b._2 =>
             s"The content of two files are different.\n\n${a._1} : ${b._1}"

@@ -3,7 +3,7 @@ package com.mdsol.sbt
 import sbt.Def
 import sbt.Keys.streams
 
-trait PluginLogger {
+trait AsciiDoctorPluginLogger {
   protected def logDebug(msg: String): Unit =
     Def.task {
       streams.value.log.debug(s"[sbt-asciidoctor] $msg")
